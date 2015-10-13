@@ -137,6 +137,7 @@ IndexHtmlSource.prototype._resolveScripts = function($) {
 
     var compilation = this.compilation;
     var sourceContext = this.sourceModule.context;
+    var additionalFiles = [];
 
     $('script').each(function () {
         var scriptSrc = $(this).attr('src');
@@ -154,11 +155,18 @@ IndexHtmlSource.prototype._resolveScripts = function($) {
                         return new URI(file).filename().match(/\.js$/)
                     });
                     if (chunkJsFile) {
+                        additionalFiles = additionalFiles.concat(_.without(chunkForEntry.files, chunkJsFile));
                         $(this).attr('src', (compilation.options.output.publicPath || '') + chunkJsFile);
                     }
                 }
             }
         }
+    });
+
+    _.forEach(additionalFiles, function(file) {
+        var uri = new URI(file);
+        if (uri.filename().match(/\.css$/))
+            $('head').append('<link rel="stylesheet" href="' + (compilation.options.output.publicPath || '') + uri + '">')
     });
 };
 
